@@ -32,8 +32,7 @@ contract Factory {
         groupCounter++;
         GroupChat newGroup = new GroupChat(msg.sender, groupCounter, groupPublicKey, encryptedGroupPrivateKey);
         groups[groupCounter] = GroupInfo(address(newGroup), true);
-
-
+    
     }
 
     function getGroupContract(uint256 groupId) external view returns (address) {
