@@ -19,6 +19,7 @@ contract Factory {
 
     uint256 public groupCounter;
 
+
     function registerUser(string memory publicKey, string memory encryptedPrivateKey) external {
         require(!users[msg.sender].exists, "User already registered");
         
@@ -32,7 +33,8 @@ contract Factory {
         groupCounter++;
         GroupChat newGroup = new GroupChat(msg.sender, groupCounter, groupPublicKey, encryptedGroupPrivateKey);
         groups[groupCounter] = GroupInfo(address(newGroup), true);
-    
+
+
     }
 
     function getGroupContract(uint256 groupId) external view returns (address) {
@@ -52,13 +54,12 @@ contract UserContract {
     string private encryptedPrivateKey;
 
     struct Message {
-        address sender;
         string encryptedContent;
         uint256 timestamp;     
         bool isRead;
     }
     
-    Message[] public messages;
+    mapping(address => Message[]) private userMessages;
     event MessageReceived(address indexed sender, string encryptedContent);
     
     modifier onlyOwner() {
@@ -73,26 +74,25 @@ contract UserContract {
     }
     
     function sendMessage(string memory encryptedMessage) external {
-        messages.push(Message(msg.sender, encryptedMessage,block.timestamp, false));
+        userMessages[msg.sender].push(Message(encryptedMessage, block.timestamp, false));
         emit MessageReceived(msg.sender, encryptedMessage);
     }
     
-    function getMessages() external view onlyOwner returns (Message[] memory) {
-        return messages;
+    function getMessagesBySender(address sender) external view onlyOwner returns (Message[] memory) {
+        return userMessages[sender];
     }
 
     function getEncryptedPrivateKey() external view onlyOwner returns (string memory) {
         return encryptedPrivateKey;
     }
 
-    function markMessageAsRead(uint index) external onlyOwner {
-        require(index < messages.length, "Invalid message index");
-        require(!messages[index].isRead, "Message already read");
+    function markMessageAsRead(address sender, uint index) external onlyOwner {
+        require(index < userMessages[sender].length, "Invalid message index");
+        require(!userMessages[sender][index].isRead, "Message already read");
         
-        messages[index].isRead = true;
+        userMessages[sender][index].isRead = true;
     }
 }
-
 contract GroupChat {
     address public admin;
     uint256 public groupId;
