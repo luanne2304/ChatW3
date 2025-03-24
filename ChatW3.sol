@@ -28,13 +28,11 @@ contract Factory {
 
     }
 
-    function createGroup(string memory groupPublicKey, string memory encryptedGroupPrivateKey) external {
+    function createGroup(string memory groupPublicKey, string memory encryptedGroupPrivateKey) external  {
         require(users[msg.sender].exists, "User not registered");
         groupCounter++;
         GroupChat newGroup = new GroupChat(msg.sender, groupCounter, groupPublicKey, encryptedGroupPrivateKey);
         groups[groupCounter] = GroupInfo(address(newGroup), true);
-
-
     }
 
     function getGroupContract(uint256 groupId) external view returns (address) {
@@ -112,7 +110,7 @@ contract GroupChat {
     }
 
     mapping(address => Member) public members;
-    Message[] public messages;
+    Message[] private messages;
 
     event MemberAdded(address indexed member);
     event MessageSent(address indexed sender, string encryptedContent, uint256 timestamp);
